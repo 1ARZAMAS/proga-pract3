@@ -1,0 +1,9 @@
+DELETE FROM Incident_history WHERE Incident_ID = 10001;
+
+Ожидаемый результат:
+Ошибка с сообщением о запрете удаления
+
+DELETE FROM Incident_history WHERE Incident_ID = 9999;
+
+Ожидаемый результат:
+Запись успешно удалена

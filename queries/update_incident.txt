@@ -1,0 +1,29 @@
+UPDATE Incident_history 
+SET status = 'В работе' 
+WHERE Incident_ID = 10001;
+
+-- Проверяем обновление
+SELECT Incident_ID, status, last_modified FROM Incident_history WHERE Incident_ID = 10001;
+
+Ожидаемый результат:
+Статус изменен на "В работе"
+Поле last_modified обновлено
+
+
+
+-- Сначала свяжем инцидент с уязвимостью
+UPDATE Incident_history 
+SET vulnerability_id = 999 
+WHERE Incident_ID = 10001;
+
+-- Затем закроем инцидент
+UPDATE Incident_history 
+SET status = 'Завершен' 
+WHERE Incident_ID = 10001;
+
+-- Проверяем статус уязвимости
+SELECT vulnerability_id, name, status FROM Vulnerability WHERE vulnerability_id = 999;
+
+Ожидаемый результат:
+Статус инцидента "Завершен"
+Уязвимость переведена в статус "Исправлена" (если нет других активных инцидентов)

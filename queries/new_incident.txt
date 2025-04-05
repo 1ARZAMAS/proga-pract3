@@ -1,0 +1,34 @@
+INSERT INTO Incident_history 
+(Incident_ID, Object_ID, Date_time_incident, Cause_incident, Damage, status)
+VALUES 
+(10001, 999, CURRENT_TIMESTAMP, 'Короткое замыкание', 'незначительный', 'Открыт');
+
+-- Проверяем результат
+SELECT Incident_ID, status, last_modified FROM Incident_history WHERE Incident_ID = 10001;
+
+Ожидаемый результат:
+Запись успешно создана
+Поле last_modified заполнено текущей датой/временем
+Статус "Открыт"
+
+
+
+INSERT INTO Incident_history 
+(Incident_ID, Object_ID, Date_time_incident, Cause_incident, Damage, status, vulnerability_id)
+VALUES 
+(10002, 999, CURRENT_TIMESTAMP, 'Эксплуатация уязвимости', 'средний', 'Открыт', 999);
+
+-- Проверяем статус уязвимости
+SELECT vulnerability_id, name, status FROM Vulnerability WHERE vulnerability_id = 999;
+
+Ожидаемый результат:
+Запись инцидента успешно создана
+Уязвимость остается в статусе "Открыта"
+
+INSERT INTO Incident_history 
+(Incident_ID, Object_ID, Date_time_incident, Cause_incident, Damage, threat_level)
+VALUES 
+(10003, 999, CURRENT_TIMESTAMP, 'Тест', 'незначительный', 'очень высокая');
+
+Ожидаемый результат:
+Ошибка или подстановка значения по умолчанию "средний"

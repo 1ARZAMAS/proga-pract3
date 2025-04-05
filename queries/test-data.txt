@@ -1,0 +1,13 @@
+-- Добавляем тестовый объект
+INSERT INTO Object (Object_ID, Object_name, Object_type, Objects_features)
+VALUES (999, 'Тестовый объект', 'офисное здание', '5 этажей, 2 эвакуационных выхода');
+
+-- Добавляем тестовую уязвимость
+INSERT INTO Vulnerability (vulnerability_id, name, description, status, detection_date, criticality)
+VALUES (999, 'Неисправность датчиков дыма', 'Датчики не реагируют на слабую задымленность', 'Открыта', '2023-11-01', 'высокая');
+
+-- Добавляем завершенный инцидент для проверки удаления
+INSERT INTO Incident_history 
+(Incident_ID, Object_ID, Date_time_incident, Cause_incident, Damage, status, vulnerability_id)
+VALUES 
+(9999, 999, '2023-11-10 12:00:00', 'Тестовая причина', 'незначительный', 'Завершен', NULL);
