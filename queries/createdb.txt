@@ -1,0 +1,45 @@
+CREATE DATABASE firesafety;
+CREATE TABLE Object (
+    Object_ID INT PRIMARY KEY,
+    Object_name VARCHAR(100) NOT NULL,
+    Object_type VARCHAR(50) NOT NULL,
+    Objects_features TEXT
+);
+CREATE TABLE System_type (
+    System_ID INT PRIMARY KEY,
+    Object_ID INT NOT NULL,
+    System_type VARCHAR(30) NOT NULL,
+    System_condition VARCHAR(20) NOT NULL,
+    FOREIGN KEY (Object_ID) REFERENCES Object(Object_ID)
+);
+CREATE TABLE Incident_history (
+    Incident_ID INT PRIMARY KEY,
+    Object_ID INT NOT NULL,
+    Date_time_incident TIMESTAMP NOT NULL,
+    Cause_incident VARCHAR(200) NOT NULL,
+    Damage TEXT NOT NULL,
+    FOREIGN KEY (Object_ID) REFERENCES Object(Object_ID)
+);
+CREATE TABLE Safety_training (
+    Training_ID INT PRIMARY KEY,
+    Object_ID INT NOT NULL,
+    Date_training DATE NOT NULL,
+    FOREIGN KEY (Object_ID) REFERENCES Object(Object_ID)
+);
+CREATE TABLE Employees (
+    Employee_ID INT PRIMARY KEY,
+    Last_name VARCHAR(30) NOT NULL,
+    First_name VARCHAR(30) NOT NULL,
+    Position VARCHAR(40) NOT NULL,
+    Phone_number VARCHAR(12) NOT NULL,
+    Work_object_id INT,
+    FOREIGN KEY (Work_object_id) REFERENCES Object(Object_ID)
+);
+CREATE TABLE Inceptions (
+    Inspection_ID INT PRIMARY KEY,
+    Object_ID INT NOT NULL,
+    Assessment_fire_safety VARCHAR(100) NOT NULL,
+    Observations TEXT,
+    Inspections_date DATE NOT NULL,
+    FOREIGN KEY (Object_ID) REFERENCES Object(Object_ID)
+);
