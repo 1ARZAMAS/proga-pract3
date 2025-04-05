@@ -1,0 +1,13 @@
+CREATE OR REPLACE FUNCTION prevent_incident_deletion()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Проверяем статус инцидента перед удалением
+    IF OLD.status NOT IN ('Завершен', 'Закрыт') THEN
+        RAISE EXCEPTION 
+        'Нельзя удалить инцидент ID % в статусе "%". Удаление разрешено только для завершенных/закрытых инцидентов.',
+        OLD.Incident_ID, OLD.status;
+    END IF;
+    
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;

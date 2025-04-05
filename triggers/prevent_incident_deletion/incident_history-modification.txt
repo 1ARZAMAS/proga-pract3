@@ -1,0 +1,4 @@
+ALTER TABLE Incident_history 
+ADD COLUMN status VARCHAR(20) 
+DEFAULT 'Открыт' 
+CONSTRAINT valid_status CHECK (status IN ('Открыт', 'В работе', 'На проверке', 'Завершен', 'Закрыт'));
