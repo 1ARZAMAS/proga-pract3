@@ -1,0 +1,48 @@
+CREATE OR REPLACE FUNCTION log_incident_changes()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_description TEXT;
+BEGIN
+    -- Определяем описание изменений
+    IF TG_OP = 'INSERT' THEN
+        v_description := 'Создан новый инцидент';
+    ELSIF TG_OP = 'UPDATE' THEN
+        v_description := 'Изменен инцидент. ';
+        
+        -- Добавляем детали изменений
+        IF OLD.Object_ID IS DISTINCT FROM NEW.Object_ID THEN
+            v_description := v_description || 'Изменен объект с ' || OLD.Object_ID || ' на ' || NEW.Object_ID || '. ';
+        END IF;
+        
+        IF OLD.Cause_incident IS DISTINCT FROM NEW.Cause_incident THEN
+            v_description := v_description || 'Изменена причина с "' || OLD.Cause_incident || '" на "' || NEW.Cause_incident || '". ';
+        END IF;
+        
+        IF OLD.Damage IS DISTINCT FROM NEW.Damage THEN
+            v_description := v_description || 'Изменен ущерб с "' || OLD.Damage || '" на "' || NEW.Damage || '". ';
+        END IF;
+    ELSIF TG_OP = 'DELETE' THEN
+        v_description := 'Удален инцидент';
+    END IF;
+    
+    -- Вставляем запись в лог
+    INSERT INTO incident_log (
+        incident_id,
+        operation_type,
+        changed_by,
+        old_values,
+        new_values,
+        description
+    )
+    VALUES (
+        COALESCE(NEW.Incident_ID, OLD.Incident_ID),
+        TG_OP,
+        current_user,
+        CASE WHEN TG_OP IN ('UPDATE', 'DELETE') THEN to_jsonb(OLD) ELSE NULL END,
+        CASE WHEN TG_OP IN ('INSERT', 'UPDATE') THEN to_jsonb(NEW) ELSE NULL END,
+        v_description
+    );
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;

@@ -1,0 +1,7 @@
+CREATE TRIGGER incident_insert_trigger
+AFTER INSERT ON Incident_history
+FOR EACH ROW EXECUTE FUNCTION log_incident_changes();
+
+CREATE TRIGGER incident_update_trigger
+AFTER UPDATE ON Incident_history
+FOR EACH ROW EXECUTE FUNCTION log_incident_changes();

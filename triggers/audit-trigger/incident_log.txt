@@ -1,0 +1,10 @@
+CREATE TABLE incident_log (
+    log_id SERIAL PRIMARY KEY,
+    incident_id INT NOT NULL,
+    operation_type VARCHAR(10) NOT NULL,
+    changed_by VARCHAR(50) NOT NULL,
+    change_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    old_values JSONB,
+    new_values JSONB,
+    description TEXT
+);
