@@ -1,0 +1,7 @@
+CREATE TRIGGER validate_threat_level_insert
+BEFORE INSERT ON Incident_history
+FOR EACH ROW EXECUTE FUNCTION validate_threat_level();
+
+CREATE TRIGGER validate_threat_level_update
+BEFORE UPDATE OF threat_level ON Incident_history
+FOR EACH ROW EXECUTE FUNCTION validate_threat_level();

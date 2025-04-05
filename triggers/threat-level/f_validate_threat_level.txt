@@ -1,0 +1,15 @@
+CREATE OR REPLACE FUNCTION validate_threat_level()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Приводим значение к нижнему регистру для унификации
+    NEW.threat_level := LOWER(COALESCE(NEW.threat_level, ''));
+    
+    -- Проверяем корректность значения
+    IF NEW.threat_level NOT IN ('незначительный', 'низкий', 'средний', 'высокий', 'критический') THEN
+        RAISE NOTICE 'Некорректная степень угрозы "%". Установлено значение по умолчанию "средний"', NEW.threat_level;
+        NEW.threat_level := 'средний';
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;

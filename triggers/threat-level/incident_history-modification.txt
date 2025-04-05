@@ -1,0 +1,3 @@
+ALTER TABLE Incident_history 
+ADD COLUMN threat_level VARCHAR(20) 
+CONSTRAINT valid_threat_level CHECK (threat_level IN ('незначительный', 'низкий', 'средний', 'высокий', 'критический'));
