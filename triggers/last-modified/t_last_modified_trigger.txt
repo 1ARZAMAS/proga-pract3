@@ -1,0 +1,15 @@
+CREATE TRIGGER incident_last_modified_trigger
+BEFORE UPDATE ON Incident_history
+FOR EACH ROW EXECUTE FUNCTION update_last_modified();
+
+CREATE TRIGGER system_last_modified_trigger
+BEFORE UPDATE ON System_type
+FOR EACH ROW EXECUTE FUNCTION update_last_modified();
+
+CREATE TRIGGER object_last_modified_trigger
+BEFORE UPDATE ON Object
+FOR EACH ROW EXECUTE FUNCTION update_last_modified();
+
+CREATE TRIGGER inspection_last_modified_trigger
+BEFORE UPDATE ON Inceptions
+FOR EACH ROW EXECUTE FUNCTION update_last_modified();
