@@ -1,0 +1,32 @@
+CREATE OR REPLACE FUNCTION check_object_systems(p_object_id INT)
+RETURNS TABLE (
+    system_type VARCHAR(50),
+    system_condition VARCHAR(20),
+    status_description TEXT,
+    priority INT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        st.System_type,
+        st.System_condition,
+        CASE
+            WHEN st.System_condition = 'Неисправна' THEN 'Требуется немедленный ремонт'
+            WHEN st.System_condition = 'Требует ремонта' THEN 'Необходим плановый ремонт'
+            WHEN st.System_condition = 'Удовлетворительное' THEN 'Работоспособна, но требует внимания'
+            ELSE 'В нормальном состоянии'
+        END,
+        CASE
+            WHEN st.System_condition = 'Неисправна' THEN 1
+            WHEN st.System_condition = 'Требует ремонта' THEN 2
+            WHEN st.System_condition = 'Удовлетворительное' THEN 3
+            ELSE 4
+        END
+    FROM 
+        System_type st
+    WHERE 
+        st.Object_ID = p_object_id
+    ORDER BY 
+        priority;
+END;
+$$ LANGUAGE plpgsql;

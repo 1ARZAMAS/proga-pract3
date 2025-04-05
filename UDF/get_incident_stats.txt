@@ -1,0 +1,69 @@
+CREATE OR REPLACE FUNCTION get_detailed_incident_stats(
+    p_period VARCHAR(10) DEFAULT 'year',
+    p_min_incidents INT DEFAULT 0
+)
+RETNS TABLE (
+    object_id INT,
+    object_name VARCHAR(100),
+    object_type VARCHAR(50),
+    total_incidents INT,
+    period_incidents INT,
+    last_incident_date TIMESTAMP,
+    most_common_cause VARCHAR(200),
+    avg_days_between_incidents NUMERIC,
+    risk_level TEXT,
+    period_condition TEXT
+) AS $$
+BEGIN
+    RETURN QUERY
+    WITH incident_stats AS (
+        SELECT 
+            o.Object_ID,
+            o.Object_name,
+            o.Object_type,
+            COUNT(ih.Incident_ID) AS total_count,
+            SUM(CASE 
+                WHEN ih.Date_time_incident >= CASE 
+                    WHEN p_period = 'month' THEN CURRENT_DATE - INTERVAL '1 month'
+                    WHEN p_period = 'year' THEN CURRENT_DATE - INTERVAL '1 year'
+                    ELSE CURRENT_DATE - INTERVAL '1 year'
+                END THEN 1 ELSE 0 END) AS period_count,
+            MAX(ih.Date_time_incident) AS last_date,
+            MODE() WITHIN GROUP (ORDER BY ih.Cause_incident) AS common_cause,
+            EXTRACT(DAY FROM (MAX(ih.Date_time_incident) - MIN(ih.Date_time_incident)) / 
+                NULLIF(COUNT(ih.Incident_ID) - 1, 0) AS avg_days
+        FROM 
+            Object o
+            LEFT JOIN Incident_history ih ON o.Object_ID = ih.Object_ID
+        GROUP BY 
+            o.Object_ID, o.Object_name, o.Object_type
+    )
+    SELECT 
+        is.Object_ID,
+        is.Object_name,
+        is.Object_type,
+        is.total_count,
+        is.period_count,
+        is.last_date,
+        is.common_cause,
+        is.avg_days,
+        CASE
+            WHEN is.period_count > 5 THEN 'КРИТИЧЕСКИЙ'
+            WHEN is.period_count > 2 THEN 'ВЫСОКИЙ'
+            WHEN is.period_count > 0 THEN 'СРЕДНИЙ'
+            ELSE 'НИЗКИЙ'
+        END,
+        CASE 
+            WHEN p_period = 'month' THEN 'Статистика за последний месяц'
+            WHEN p_period = 'year' THEN 'Статистика за последний год'
+            ELSE 'Общая статистика'
+        END
+    FROM 
+        incident_stats is
+    WHERE 
+        is.period_count >= p_min_incidents
+    ORDER BY 
+        is.period_count DESC,
+        is.last_date DESC;
+END;
+$$ LANGUAGE plpgsql;

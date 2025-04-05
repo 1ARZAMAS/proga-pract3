@@ -1,0 +1,40 @@
+CREATE OR REPLACE FUNCTION check_object_training_status(p_object_id INT)
+RETURNS TEXT AS $$
+DECLARE
+    object_name TEXT;
+    last_training_date DATE;
+    days_since_training INT;
+    training_status TEXT;
+BEGIN
+    -- Получаем название объекта
+    SELECT Object_name INTO object_name
+    FROM Object
+    WHERE Object_ID = p_object_id;
+    
+    IF object_name IS NULL THEN
+        RETURN 'Объект с ID ' || p_object_id || ' не найден';
+    END IF;
+    
+    -- Получаем дату последнего обучения по объекту
+    SELECT MAX(Date_training) INTO last_training_date
+    FROM Safety_training
+    WHERE Object_ID = p_object_id;
+    
+    -- Рассчитываем статус обучения
+    IF last_training_date IS NULL THEN
+        training_status := 'Обучение не проводилось';
+    ELSE
+        days_since_training := CURRENT_DATE - last_training_date;
+        
+        IF days_since_training > 365 THEN
+            training_status := 'Требуется обучение (последнее было ' || last_training_date || ', прошло ' || days_since_training || ' дней)';
+        ELSIF days_since_training > 180 THEN
+            training_status := 'Рекомендуется обучение (последнее было ' || last_training_date || ', прошло ' || days_since_training || ' дней)';
+        ELSE
+            training_status := 'Обучение актуально (последнее было ' || last_training_date || ', прошло ' || days_since_training || ' дней)';
+        END IF;
+    END IF;
+    
+    RETURN 'Объект "' || object_name || '": ' || training_status;
+END;
+$$ LANGUAGE plpgsql;

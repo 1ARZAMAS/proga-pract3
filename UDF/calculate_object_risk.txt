@@ -1,0 +1,70 @@
+CREATE OR REPLACE FUNCTION calculate_object_risk(p_object_id INT)
+RETURNS VARCHAR(30) AS $$
+DECLARE
+    incident_count INT;
+    system_condition VARCHAR(20);
+    last_inspection_result VARCHAR(100);
+    risk_score INT := 0;
+    risk_level VARCHAR(30);
+    one_year_ago TIMESTAMP := CURRENT_TIMESTAMP - INTERVAL '1 year';
+BEGIN
+    -- Проверка существования объекта
+    IF NOT EXISTS (SELECT 1 FROM Object WHERE Object_ID = p_object_id) THEN
+        RETURN 'Объект не найден';
+    END IF;
+    
+    -- 1. Подсчет инцидентов за последний год
+    SELECT COUNT(*) INTO incident_count
+    FROM Incident_history
+    WHERE Object_ID = p_object_id
+    AND Date_time_incident >= one_year_ago;
+    
+    risk_score := risk_score + incident_count * 10;
+    
+    -- 2. Проверка состояния систем пожарной безопасности
+    SELECT System_condition INTO system_condition
+    FROM System_type
+    WHERE Object_ID = p_object_id
+    LIMIT 1;
+    
+    IF system_condition = 'Плохое' THEN
+        risk_score := risk_score + 30;
+    ELSIF system_condition = 'Удовлетворительное' THEN
+        risk_score := risk_score + 15;
+    ELSIF system_condition = 'Хорошее' THEN
+        risk_score := risk_score + 5;
+    ELSIF system_condition = 'Отличное' THEN
+        risk_score := risk_score + 0;
+    ELSIF system_condition IS NULL THEN
+        risk_score := risk_score + 20; -- Если данные отсутствуют
+    END IF;
+    
+    -- 3. Учет результатов последней проверки
+    SELECT Assessment_fire_safety INTO last_inspection_result
+    FROM Inceptions
+    WHERE Object_ID = p_object_id
+    ORDER BY Inspections_date DESC
+    LIMIT 1;
+    
+    IF last_inspection_result LIKE '%нарушения%' THEN
+        risk_score := risk_score + 20;
+    ELSIF last_inspection_result LIKE '%замечания%' THEN
+        risk_score := risk_score + 10;
+    ELSIF last_inspection_result IS NULL THEN
+        risk_score := risk_score + 15; -- Если проверок не было
+    END IF;
+    
+    -- Определение уровня риска
+    IF risk_score < 20 THEN
+        risk_level := 'Низкий';
+    ELSIF risk_score <= 50 THEN
+        risk_level := 'Средний';
+    ELSIF risk_score <= 80 THEN
+        risk_level := 'Высокий';
+    ELSE
+        risk_level := 'Критический';
+    END IF;
+    
+    RETURN risk_level;
+END;
+$$ LANGUAGE plpgsql;
