@@ -1,0 +1,22 @@
+    Для calculate_object_risk
+SELECT Object_ID, calculate_object_risk(Object_ID) AS risk_level
+FROM Object;
+
+SELECT calculate_object_risk(4);
+
+
+    Для check_object_training_status
+SELECT 
+    Object_ID, 
+    check_object_training_status(Object_ID) AS training_status
+FROM 
+    Object;
+
+SELECT check_object_training_status(4);
+
+
+    Для check_object_systems
+SELECT * FROM check_object_systems(4);
+
+
+Для 

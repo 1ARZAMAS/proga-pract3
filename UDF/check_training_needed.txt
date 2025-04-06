@@ -1,17 +1,17 @@
 CREATE OR REPLACE FUNCTION check_object_training_status(p_object_id INT)
 RETURNS TEXT AS $$
 DECLARE
-    object_name TEXT;
+    v_object_name TEXT;
     last_training_date DATE;
     days_since_training INT;
     training_status TEXT;
 BEGIN
     -- Получаем название объекта
-    SELECT Object_name INTO object_name
+    SELECT Object_name INTO v_object_name
     FROM Object
     WHERE Object_ID = p_object_id;
     
-    IF object_name IS NULL THEN
+    IF v_object_name IS NULL THEN
         RETURN 'Объект с ID ' || p_object_id || ' не найден';
     END IF;
     
@@ -35,6 +35,6 @@ BEGIN
         END IF;
     END IF;
     
-    RETURN 'Объект "' || object_name || '": ' || training_status;
+    RETURN 'Объект "' || v_object_name || '": ' || training_status;
 END;
 $$ LANGUAGE plpgsql;

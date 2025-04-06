@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION calculate_object_risk(p_object_id INT)
 RETURNS VARCHAR(30) AS $$
 DECLARE
     incident_count INT;
-    system_condition VARCHAR(20);
+    v_system_condition VARCHAR(20);
     last_inspection_result VARCHAR(100);
     risk_score INT := 0;
     risk_level VARCHAR(30);
@@ -17,25 +17,25 @@ BEGIN
     SELECT COUNT(*) INTO incident_count
     FROM Incident_history
     WHERE Object_ID = p_object_id
-    AND Date_time_incident >= one_year_ago;
+      AND Date_time_incident >= one_year_ago;
     
     risk_score := risk_score + incident_count * 10;
     
     -- 2. Проверка состояния систем пожарной безопасности
-    SELECT System_condition INTO system_condition
+    SELECT System_condition INTO v_system_condition
     FROM System_type
     WHERE Object_ID = p_object_id
     LIMIT 1;
     
-    IF system_condition = 'Плохое' THEN
+    IF v_system_condition = 'Плохое' THEN
         risk_score := risk_score + 30;
-    ELSIF system_condition = 'Удовлетворительное' THEN
+    ELSIF v_system_condition = 'Удовлетворительное' THEN
         risk_score := risk_score + 15;
-    ELSIF system_condition = 'Хорошее' THEN
+    ELSIF v_system_condition = 'Хорошее' THEN
         risk_score := risk_score + 5;
-    ELSIF system_condition = 'Отличное' THEN
+    ELSIF v_system_condition = 'Отличное' THEN
         risk_score := risk_score + 0;
-    ELSIF system_condition IS NULL THEN
+    ELSIF v_system_condition IS NULL THEN
         risk_score := risk_score + 20; -- Если данные отсутствуют
     END IF;
     
